@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Scroll</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .main {
+            width: 800px;
+            overflow: hidden;
+        }
+
+        canvas {
+            border: 1px solid black;
+        }
+
+        .scroll-wrapper {
+            overflow-x: scroll;
+            overflow-y: hidden;
+        }
+
+        .scroll-core {
+            height: 1px;
+        }
+    </style>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div class="main">
+        <canvas id="myChart" width="800" height="400"></canvas>
+        <div class="scroll-wrapper">
+            <div class="scroll-core"></div>
+        </div>
+    </div>
+
+<script>
+    const totalDataPoints = 100000;  // データポイントの総数
+    const maxDisplayDataLimit = 10;  // 表示するデータポイント数の上限
+    let currentIndex = 0;  // 現在の表示位置
+
+    // ランダムデータ生成関数
+    function generateRandomData(count, min, max) {
+        return Array.from({length: count}, () => Math.floor(Math.random() * (max - min + 1)) + min);
+    }
+
+    // グラフの表示範囲を更新する関数
+    function updateChartRange(startIndex) {
+        const endIndex = startIndex + maxDisplayDataLimit;
+        myChart.data.labels = labels.slice(startIndex, endIndex);
+        myChart.data.datasets[0].data = randomData.slice(startIndex, endIndex);
+        myChart.update();
+    }
+
+    // スクロールイベントハンドラー
+    function onScroll(evt) {
+        const scrollLeft = evt.target.scrollLeft;
+        // 現在のスクロール位置 / 1目盛りの幅 = 現在のインデックス
+        const newStartIndex = Math.round(scrollLeft / (800 / (maxDisplayDataLimit - 1)));
+        if (newStartIndex !== currentIndex) {
+            currentIndex = newStartIndex;
+            updateChartRange(currentIndex);
+        }
+    }
+
+    // 初期化用のデータ
+    const randomData = generateRandomData(totalDataPoints, 0, 100);
+    const labels = Array.from({length: totalDataPoints}, (_, i) => `Label ${i + 1}`);
+
+    // スクロール領域の幅を設定
+    const scrollWrapper = document.querySelector('.scroll-wrapper');
+    const scrollCore = document.querySelector('.scroll-core');
+    // 1目盛りの幅 * データの総数 = 最大スクロール量
+    scrollCore.style.width = `${(800 / (maxDisplayDataLimit - 1) * (totalDataPoints - 1))}px`;
+
+    scrollWrapper.addEventListener('scroll', onScroll);
+
+    // グラフの初期設定
+    const data = {
+        labels: labels.slice(0, maxDisplayDataLimit),
+        datasets: [{
+            label: 'Random Data',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+            data: randomData.slice(0, maxDisplayDataLimit),
+        }]
+    };
+
+    const config = {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    ticks: {
+                        maxTicksLimit: maxDisplayDataLimit,
+                    }
+                },
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    };
+
+    // グラフを描画
+    const myChart = new Chart(
+        document.getElementById('myChart'),
+        config
+    );
+</script>
+
+</body>
+</html>
