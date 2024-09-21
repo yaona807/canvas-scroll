@@ -62,6 +62,15 @@
         myChart.update();
     }
 
+    // ホイールイベントハンドラー
+    function onWheel(evt) {
+        if (evt.shiftKey) {
+            scrollWrapper.scrollLeft += evt.deltaY;
+        } else if (evt.deltaX) {
+            scrollWrapper.scrollLeft += evt.deltaX;
+        }
+    }
+
     // スクロールイベントハンドラー
     function onScroll(evt) {
         const scrollLeft = evt.target.scrollLeft;
@@ -77,13 +86,15 @@
     const randomData = generateRandomData(totalDataPoints, 0, 100);
     const labels = Array.from({length: totalDataPoints}, (_, i) => `Label ${i + 1}`);
 
-    // スクロール領域の幅を設定
+    const canvas = document.getElementById('myChart');
     const scrollWrapper = document.querySelector('.scroll-wrapper');
     const scrollCore = document.querySelector('.scroll-core');
+
     // 1目盛りの幅 * データの総数 = 最大スクロール量
     scrollCore.style.width = `${(800 / (maxDisplayDataLimit - 1) * (totalDataPoints - 1))}px`;
 
     scrollWrapper.addEventListener('scroll', onScroll);
+    canvas.addEventListener('wheel', onWheel);
 
     // グラフの初期設定
     const data = {
@@ -117,7 +128,7 @@
 
     // グラフを描画
     const myChart = new Chart(
-        document.getElementById('myChart'),
+        canvas,
         config
     );
 </script>
